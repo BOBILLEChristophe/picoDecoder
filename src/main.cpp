@@ -67,8 +67,8 @@ void setup()
   }
 
   //--- init des broches des capteurs
-  for (int i = 0; i < nbSensors; i++)
-    pinMode(sensorInPin[i], INPUT_PULLUP);
+  for (byte el : sensorInPin)
+    pinMode(el, INPUT_PULLUP);
 }
 
 CANMessage frame;
