@@ -8,7 +8,7 @@
 #include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.4.0"
+#define VERSION "0.4.1"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
 
 //----------------------------------------------------------------------------------------
@@ -26,6 +26,10 @@
 const uint16_t thisHash = 0x00; // Identifiant unique du module (UID)
 const uint8_t nbSensors = 16;   // Choisir le nombre d'entrées souhaitées
 const byte sensorInPin[nbSensors] = {3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 27, 28};
+
+// ——————————————————————————————————————————————————————————————————————————————
+//    SETUP
+// ——————————————————————————————————————————————————————————————————————————————
 
 void setup()
 {
