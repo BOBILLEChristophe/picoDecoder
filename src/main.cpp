@@ -27,14 +27,18 @@ const uint16_t thisHash = 0x00; // Identifiant unique du module (UID)
 const uint8_t nbSensors = 16;   // Choisir le nombre d'entrées souhaitées
 const byte sensorInPin[nbSensors] = {3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 27, 28};
 
+CANMessage frame;
+
 // ——————————————————————————————————————————————————————————————————————————————
 //    SETUP
 // ——————————————————————————————————————————————————————————————————————————————
 
 void setup()
 {
+  //--- alume la led
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
+
   Serial.begin(115200);
   while (!Serial)
   {
@@ -52,8 +56,8 @@ void setup()
 
   Serial.println("Start setup");
 
+  //--- parametrage et lancement du CAN
   ACAN2515Settings settings(k2515ClockFrequency, 250UL * 1000UL);
-
   const uint16_t errorCode = gSat.begin(settings);
 
   if (errorCode == 0)
@@ -67,11 +71,14 @@ void setup()
   }
 
   //--- init des broches des capteurs
-  for (byte el : sensorInPin)
+  for (auto &el : sensorInPin)
     pinMode(el, INPUT_PULLUP);
-}
 
-CANMessage frame;
+  //--- infos de la frame
+  frame.id = thisHash;
+  frame.ext = 0;
+  frame.len = 2;
+}
 
 // ——————————————————————————————————————————————————————————————————————————————
 //    LOOP
@@ -79,16 +86,16 @@ CANMessage frame;
 
 void loop()
 {
+  //--- MAJ des capteurs
   uint16_t state = 0;
   for (byte i = 0; i < nbSensors; i++)
   {
-    if (!digitalRead(sensorInPin[i])) // MAJ des capteurs
+    if (!digitalRead(sensorInPin[i]))
       state |= 1 << i;
   }
+
+  //--- MAJ des datas de la frame et envoi
   frame.data16[0] = state;
-  frame.id = thisHash;
-  frame.ext = 0;
-  frame.len = 2;
   const bool ok = gSat.can.tryToSend(frame);
   if (ok)
     Serial.printf("Sent: %d\n", frame.data16[0]);
