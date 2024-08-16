@@ -23,17 +23,17 @@
 #error "CPU frequency is wrong. It should be set to 128 MHz"
 #endif
 
-
 const uint16_t thisHash = 0x00; // Identifiant unique du module (UID)
-const uint8_t nbSensors = 16;  // Choisir le nombre d'entrées souhaitées
-const byte sensorInPin[nbSensors] = { 3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 27, 28 };
+const uint8_t nbSensors = 16;   // Choisir le nombre d'entrées souhaitées
+const byte sensorInPin[nbSensors] = {3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 27, 28};
 
-
-void setup() {
+void setup()
+{
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
   Serial.begin(115200);
-  while (!Serial) {
+  while (!Serial)
+  {
     delay(50);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
@@ -52,38 +52,20 @@ void setup() {
 
   const uint16_t errorCode = gSat.begin(settings);
 
-  if (errorCode == 0) {
-    Serial.print("Bit Rate prescaler: ");
-    Serial.println(settings.mBitRatePrescaler);
-    Serial.print("Propagation Segment: ");
-    Serial.println(settings.mPropagationSegment);
-    Serial.print("Phase segment 1: ");
-    Serial.println(settings.mPhaseSegment1);
-    Serial.print("Phase segment 2: ");
-    Serial.println(settings.mPhaseSegment2);
-    Serial.print("SJW: ");
-    Serial.println(settings.mSJW);
-    Serial.print("Triple Sampling: ");
-    Serial.println(settings.mTripleSampling ? "yes" : "no");
-    Serial.print("Actual bit rate: ");
-    Serial.print(settings.actualBitRate());
-    Serial.println(" bit/s");
-    Serial.print("Exact bit rate ? ");
-    Serial.println(settings.exactBitRate() ? "yes" : "no");
-    Serial.print("Sample point: ");
-    Serial.print(settings.samplePointFromBitStart());
-    Serial.println("%");
-  } else {
-    Serial.print("Configuration error 0x");
+  if (errorCode == 0)
+    Serial.print("Configuration CAN ok.");
+  else
+  {
+    Serial.print("Configuration CAN error 0x");
     Serial.println(errorCode, HEX);
     printACAN2515Error(Serial, errorCode);
+    return;
   }
 
-    //--- init des broches des capteurs
+  //--- init des broches des capteurs
   for (int i = 0; i < nbSensors; i++)
     pinMode(sensorInPin[i], INPUT_PULLUP);
 }
-
 
 CANMessage frame;
 
@@ -95,9 +77,8 @@ void loop()
 {
   uint16_t state = 0;
   for (byte i = 0; i < nbSensors; i++)
-  { // MAJ des capteurs
-    state &= ~(1 << i);
-    if (!digitalRead(sensorInPin[i]))
+  {
+    if (!digitalRead(sensorInPin[i])) // MAJ des capteurs
       state |= 1 << i;
   }
   frame.data16[0] = state;
@@ -113,4 +94,3 @@ void loop()
 }
 
 // ——————————————————————————————————————————————————————————————————————————————
-
