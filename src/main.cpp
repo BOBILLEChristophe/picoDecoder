@@ -3,12 +3,12 @@
    picoDecoder
 
 */
+
 #include <Arduino.h>
-#include <ACAN2515.h>
-// #include <SPI.h>
+#include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.3.0"
+#define VERSION "0.4.0"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
 
 //----------------------------------------------------------------------------------------
@@ -19,41 +19,23 @@
 #error "Select a Raspberry Pi Pico board"
 #endif
 
+#if F_CPU != 128000000L
+#error "CPU frequency is wrong. It should be set to 128 MHz"
+#endif
+
+
 const uint16_t thisHash = 0x00; // Identifiant unique du module (UID)
+const uint8_t nbSensors = 16;  // Choisir le nombre d'entrées souhaitées
+const byte sensorInPin[nbSensors] = { 3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19, 20, 21, 27, 28 };
 
-static const byte MCP2515_INT = 1;   // INT output of MCP2515
-static const byte MCP2515_SCK = 18;  // SCK input of MCP2515
-static const byte MCP2515_MOSI = 19; // SI input of MCP2515
-static const byte MCP2515_MISO = 16; // SO output of MCP2515
-static const byte MCP2515_CS = 17;   // CS input of MCP2515
 
-// ——————————————————————————————————————————————————————————————————————————————
-//   MCP2515 Driver object
-// ——————————————————————————————————————————————————————————————————————————————
-
-ACAN2515 can(MCP2515_CS, SPI, MCP2515_INT);
-
-// ——————————————————————————————————————————————————————————————————————————————
-//   MCP2515 Quartz: adapt to your design
-// ——————————————————————————————————————————————————————————————————————————————
-
-static const uint32_t QUARTZ_FREQUENCY = 8UL * 1000UL * 1000UL; // 8 MHz
-
-const uint8_t nbSensors = 16; // Choisir le nombre d'entrées souhaitées
-const byte sensorInPin[nbSensors] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 21};
-
-// ——————————————————————————————————————————————————————————————————————————————
-//    SETUP
-// ——————————————————————————————————————————————————————————————————————————————
-
-void setup()
-{
-  //--- Start serial
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
   Serial.begin(115200);
-  //--- Wait for serial (blink led at 10 Hz during waiting)
-  while (!Serial)
-  {
+  while (!Serial) {
     delay(50);
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
 
   Serial.printf("\nProject   :    %s", PROJECT);
@@ -66,35 +48,48 @@ void setup()
 
   Serial.println("Start setup");
 
-  //--- Configure SPI
-  SPI.setSCK(MCP2515_SCK);
-  SPI.setTX(MCP2515_MOSI);
-  SPI.setRX(MCP2515_MISO);
-  SPI.setCS(MCP2515_CS);
-  SPI.begin();
-  delay(1000);
-  //--- Configure ACAN2515
-  Serial.println("Configure ACAN2515");
-  ACAN2515Settings settings(QUARTZ_FREQUENCY, 250UL * 1000UL); // CAN bit rate 250 kb/s
-  const uint32_t errorCode = can.begin(settings, []
-                                       { can.isr(); });
-  if (errorCode != 0)
-  {
+  ACAN2515Settings settings(k2515ClockFrequency, 250UL * 1000UL);
+
+  const uint16_t errorCode = gSat.begin(settings);
+
+  if (errorCode == 0) {
+    Serial.print("Bit Rate prescaler: ");
+    Serial.println(settings.mBitRatePrescaler);
+    Serial.print("Propagation Segment: ");
+    Serial.println(settings.mPropagationSegment);
+    Serial.print("Phase segment 1: ");
+    Serial.println(settings.mPhaseSegment1);
+    Serial.print("Phase segment 2: ");
+    Serial.println(settings.mPhaseSegment2);
+    Serial.print("SJW: ");
+    Serial.println(settings.mSJW);
+    Serial.print("Triple Sampling: ");
+    Serial.println(settings.mTripleSampling ? "yes" : "no");
+    Serial.print("Actual bit rate: ");
+    Serial.print(settings.actualBitRate());
+    Serial.println(" bit/s");
+    Serial.print("Exact bit rate ? ");
+    Serial.println(settings.exactBitRate() ? "yes" : "no");
+    Serial.print("Sample point: ");
+    Serial.print(settings.samplePointFromBitStart());
+    Serial.println("%");
+  } else {
     Serial.print("Configuration error 0x");
     Serial.println(errorCode, HEX);
+    printACAN2515Error(Serial, errorCode);
   }
 
-  //--- init des broches des capteurs
+    //--- init des broches des capteurs
   for (int i = 0; i < nbSensors; i++)
     pinMode(sensorInPin[i], INPUT_PULLUP);
 }
+
 
 CANMessage frame;
 
 // ——————————————————————————————————————————————————————————————————————————————
 //    LOOP
 // ——————————————————————————————————————————————————————————————————————————————
-
 
 void loop()
 {
@@ -109,7 +104,7 @@ void loop()
   frame.id = thisHash;
   frame.ext = 0;
   frame.len = 2;
-  const bool ok = can.tryToSend(frame);
+  const bool ok = gSat.can.tryToSend(frame);
   if (ok)
     Serial.printf("Sent: %d\n", frame.data16[0]);
   else
@@ -118,3 +113,4 @@ void loop()
 }
 
 // ——————————————————————————————————————————————————————————————————————————————
+
