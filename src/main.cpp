@@ -8,7 +8,7 @@
 #include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.4.1"
+#define VERSION "0.5.0"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
 
 //----------------------------------------------------------------------------------------
@@ -57,7 +57,8 @@ void setup()
   Serial.println("Start setup");
 
   //--- parametrage et lancement du CAN
-  ACAN2515Settings settings(k2515ClockFrequency, 250UL * 1000UL);
+  ACAN2515Settings settings(k2515ClockFrequency, 1000UL * 1000UL); // 1 Mbps
+  //settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const uint16_t errorCode = gSat.begin(settings);
 
   if (errorCode == 0)
