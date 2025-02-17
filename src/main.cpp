@@ -8,7 +8,7 @@
 #include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.5.0"
+#define VERSION "0.5.3"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
 
 //----------------------------------------------------------------------------------------
