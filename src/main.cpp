@@ -8,7 +8,7 @@
 #include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.5.3"
+#define VERSION "0.5.5"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
 
 //----------------------------------------------------------------------------------------
@@ -46,30 +46,30 @@ void setup()
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
 
-  Serial.printf("\nProject   :    %s", PROJECT);
-  Serial.printf("\nVersion   :    %s", VERSION);
-  Serial.printf("\nAuteur    :    %s", AUTHOR);
-  Serial.printf("\nFichier   :    %s", __FILE__);
-  Serial.printf("\nCompiled  :    %s", __DATE__);
-  Serial.printf(" - %s\n\n", __TIME__);
-  Serial.printf("-----------------------------------\n\n");
+  // Serial.printf("\nProject   :    %s", PROJECT);
+  // Serial.printf("\nVersion   :    %s", VERSION);
+  // Serial.printf("\nAuteur    :    %s", AUTHOR);
+  // Serial.printf("\nFichier   :    %s", __FILE__);
+  // Serial.printf("\nCompiled  :    %s", __DATE__);
+  // Serial.printf(" - %s\n\n", __TIME__);
+  // Serial.printf("-----------------------------------\n\n");
 
-  Serial.println("Start setup");
+  // Serial.println("Start setup");
 
   //--- parametrage et lancement du CAN
   ACAN2515Settings settings(k2515ClockFrequency, 1000UL * 1000UL); // 1 Mbps
   //settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const uint16_t errorCode = gSat.begin(settings);
 
-  if (errorCode == 0)
-    Serial.print("Configuration CAN ok.");
-  else
-  {
-    Serial.print("Configuration CAN error 0x");
-    Serial.println(errorCode, HEX);
-    printACAN2515Error(Serial, errorCode);
-    return;
-  }
+  // if (errorCode == 0)
+  //   Serial.print("Configuration CAN ok.");
+  // else
+  // {
+  //   Serial.print("Configuration CAN error 0x");
+  //   Serial.println(errorCode, HEX);
+  //   printACAN2515Error(Serial, errorCode);
+  //   return;
+  // }
 
   //--- init des broches des capteurs
   for (auto &el : sensorInPin)
@@ -98,10 +98,10 @@ void loop()
   //--- MAJ des datas de la frame et envoi
   frame.data16[0] = state;
   const bool ok = gSat.can.tryToSend(frame);
-  if (ok)
-    Serial.printf("Sent: %d\n", frame.data16[0]);
-  else
-    Serial.println("Send failure\n");
+  // if (ok)
+  //   Serial.printf("Sent: %d\n", frame.data16[0]);
+  // else
+  //   Serial.println("Send failure\n");
   delay(100); // Toutes les 100ms
 }
 
