@@ -7,7 +7,7 @@
 #include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.5.5"
+#define VERSION "0.5.6"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
 
 //----------------------------------------------------------------------------------------
@@ -38,12 +38,12 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
-  Serial.begin(115200);
-  while (!Serial)
-  {
-    delay(50);
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  }
+  // Serial.begin(115200);
+  // while (!Serial)
+  // {
+  //   delay(50);
+  //   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  // }
 
   // Serial.printf("\nProject   :    %s", PROJECT);
   // Serial.printf("\nVersion   :    %s", VERSION);
