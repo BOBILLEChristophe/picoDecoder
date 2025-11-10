@@ -7,8 +7,15 @@
 #include "SatellitePico.h"
 
 #define PROJECT "picoDecoder"
-#define VERSION "0.5.6"
+#define VERSION "0.5.8"
 #define AUTHOR "Christophe BOBILLE - www.locoduino.org"
+
+
+/* /!\
+ Pou activer la lecture du debug sur le moniteur serie, il faut decommenter la ligne ci dessous
+ Le Pico ne fonctionera pas sans alimentation USB si le mode debug est active.
+*/
+#define debug
 
 //----------------------------------------------------------------------------------------
 //  Board Check
@@ -38,6 +45,7 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
+  #ifdef debug
   // Serial.begin(115200);
   // while (!Serial)
   // {
@@ -54,10 +62,10 @@ void setup()
   // Serial.printf("-----------------------------------\n\n");
 
   // Serial.println("Start setup");
+  #endif
 
   //--- parametrage et lancement du CAN
   ACAN2515Settings settings(k2515ClockFrequency, 1000UL * 1000UL); // 1 Mbps
-  //settings.mRequestedMode = ACAN2515Settings::LoopBackMode ; // Select loopback mode
   const uint16_t errorCode = gSat.begin(settings);
 
   // if (errorCode == 0)
